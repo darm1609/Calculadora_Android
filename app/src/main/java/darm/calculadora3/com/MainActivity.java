@@ -38,7 +38,12 @@ public class MainActivity extends AppCompatActivity {
             display.setText("0");
         }
         else
-            display.append(boton.getText());
+        {
+            if(cad.equals("") && boton.getText().equals("."))
+                display.append("0"+boton.getText());
+            else
+                display.append(boton.getText());
+        }
     }
 
     public void borrar(android.view.View vista)
