@@ -70,6 +70,14 @@
                 android:onClick="digit"
                 android:text="/" />
 
+            <Button
+                android:id="@+id/button_porcentaje"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:onClick="digit"
+                android:text="%" />
+
         </LinearLayout>
 
         <LinearLayout
