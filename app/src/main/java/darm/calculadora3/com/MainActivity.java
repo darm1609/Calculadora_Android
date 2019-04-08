@@ -6,6 +6,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
+
 public class MainActivity extends AppCompatActivity {
 
     Integer digit = 0;
@@ -27,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         cad = String.valueOf(display.getText());
         if(cad.equals("0"))
             display.setText("");
-        if((cad.charAt(cad.length()-1)=='+' || cad.charAt(cad.length()-1)=='-' || cad.charAt(cad.length()-1)=='x' || cad.charAt(cad.length()-1)=='/') && (boton.getText().equals("+") || boton.getText().equals("-") || boton.getText().equals("x") || boton.getText().equals("/")))
+        if((cad.charAt(cad.length()-1)=='+' || cad.charAt(cad.length()-1)=='-' || cad.charAt(cad.length()-1)=='x' || cad.charAt(cad.length()-1)=='/') && (boton.getText().equals("+") || boton.getText().equals("-") || boton.getText().equals("x") || boton.getText().equals("/") || boton.getText().equals("%")))
         {
             if(cad.charAt(cad.length()-1)!='x' && cad.charAt(cad.length()-1)!='/' || !boton.getText().equals("-"))
             {
@@ -35,8 +37,13 @@ public class MainActivity extends AppCompatActivity {
                 display.setText(cad);
             }
         }
+        if((cad.charAt(cad.length()-1)=='%' && boton.getText().equals("%")) ||(cad.charAt(cad.length()-1)=='.' && boton.getText().equals(".")))
+        {
+            cad = cad.substring(0, cad.length() - 1);
+            display.setText(cad);
+        }
         cad = String.valueOf(display.getText());
-        if(cad.equals("") && (boton.getText().equals("+") || boton.getText().equals("x") || boton.getText().equals("/")))
+        if(cad.equals("") && (boton.getText().equals("+") || boton.getText().equals("x") || boton.getText().equals("/") || boton.getText().equals("%")))
         {
             display.setText("0");
         }
@@ -61,12 +68,48 @@ public class MainActivity extends AppCompatActivity {
 
     public void resultado(android.view.View vista)
     {
-        String n1="",n2="",n1_aux="";
+        String n1="",n2="",n1_aux="",res_cad;
         char[] tempArrayChar;
-        double res = 0;
+        double res = 0.0;
         int i = 0;
         boolean por = false;
         cad = String.valueOf(display.getText());
+        while(cad.contains("%"))
+        {
+            res = 0;
+            n1 = "";
+            n1_aux = "";
+            n2 = "";
+            boolean neg = false;
+            for (i = cad.indexOf("%") - 1; i >= 0 && cad.charAt(i) != '+' && cad.charAt(i) != '/' && cad.charAt(i) != 'x'; i--)
+            {
+                if(cad.charAt(i)=='-')
+                    neg = true;
+                n1 += Character.toString(cad.charAt(i));
+                tempArrayChar = cad.toCharArray();
+                tempArrayChar[i] = 'd';
+                cad = String.valueOf(tempArrayChar);
+                if(neg)
+                    break;
+            }
+            neg = false;
+            for (i = n1.length() - 1; i >= 0; i--)
+            {
+                n1_aux += Character.toString(n1.charAt(i));
+            }
+            n1 = n1_aux;
+            res = Double.parseDouble(n1) / 100;
+            res_cad = convertir_cientifica(res);
+            if(cad.lastIndexOf("d")+1<cad.length()-1)
+            {
+                if (cad.charAt(cad.lastIndexOf("d") + 2) != '+' && cad.charAt(cad.lastIndexOf("d") + 2) != '-' && cad.charAt(cad.lastIndexOf("d") + 2) != 'x' && cad.charAt(cad.lastIndexOf("d") + 2) != '/')
+                    cad = cad.substring(0, cad.indexOf("d")) + res_cad + "x" + cad.substring(cad.lastIndexOf("d") + 2, cad.length());
+                else
+                    cad = cad.substring(0, cad.indexOf("d")) + res_cad + cad.substring(cad.lastIndexOf("d") + 2, cad.length());
+            }
+            else
+                cad = cad.substring(0, cad.indexOf("d")) + res_cad + cad.substring(cad.lastIndexOf("d") + 2, cad.length());
+        }
         while(cad.indexOf("x")!=-1)
         {
             res = 0;
@@ -105,10 +148,11 @@ public class MainActivity extends AppCompatActivity {
             }
             cad = cad.substring(0, cad.indexOf("x")) + cad.substring(cad.indexOf("x") + 1, cad.length());
             res = Double.parseDouble(n1) * Double.parseDouble(n2);
+            res_cad = convertir_cientifica(res);
             for (i = cad.indexOf("d"); i < cad.length(); i++)
                 if (cad.charAt(i) != 'd')
                     break;
-            cad = cad.substring(0, cad.indexOf("d")) + String.valueOf(res) + cad.substring(i, cad.length());
+            cad = cad.substring(0, cad.indexOf("d")) + res_cad + cad.substring(i, cad.length());
         }
         while(cad.indexOf("/")!=-1)
         {
@@ -148,10 +192,11 @@ public class MainActivity extends AppCompatActivity {
             }
             cad = cad.substring(0,cad.indexOf("/")) + cad.substring(cad.indexOf("/")+1,cad.length());
             res = Double.parseDouble(n1) / Double.parseDouble(n2);
+            res_cad = convertir_cientifica(res);
             for(i=cad.indexOf("d");i<cad.length();i++)
                 if(cad.charAt(i)!='d')
                     break;
-            cad = cad.substring(0,cad.indexOf("d")) + String.valueOf(res) + cad.substring(i,cad.length());
+            cad = cad.substring(0,cad.indexOf("d")) + res_cad + cad.substring(i,cad.length());
         }
         while(cad.contains("+"))
         {
@@ -184,11 +229,12 @@ public class MainActivity extends AppCompatActivity {
                 cad = String.valueOf(tempArrayChar);
             }
             res = Double.parseDouble(n1) + Double.parseDouble(n2);
-            cad = cad.substring(0, cad.indexOf('d')) + String.valueOf(res) + cad.substring(cad.lastIndexOf('d')+1, cad.length());
+            res_cad = convertir_cientifica(res);
+            cad = cad.substring(0, cad.indexOf('d')) + res_cad + cad.substring(cad.lastIndexOf('d')+1, cad.length());
         }
         while(cad.contains("-"))
         {
-            res = 0;
+            res = 0.0;
             n1 = "";
             n1_aux = "";
             n2 = "";
@@ -227,7 +273,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 cad = cad.substring(cad.lastIndexOf('d')+1,cad.length());
                 res = Double.parseDouble(n1) + Double.parseDouble(n2);
-                cad = String.valueOf(res) + cad;
+                res_cad = convertir_cientifica(res);
+                cad = res_cad + cad;
             }
             else//El primero elemento no es negativo
             {
@@ -255,7 +302,8 @@ public class MainActivity extends AppCompatActivity {
                 while(i<cad.length() && cad.charAt(i)!='-');
                 cad = cad.substring(cad.lastIndexOf('d')+1,cad.length());
                 res = Double.parseDouble(n1) + Double.parseDouble(n2);
-                cad = String.valueOf(res) + cad;
+                res_cad = convertir_cientifica(res);
+                cad = res_cad + cad;
             }
         }
         for(i=cad.indexOf(".")+1;i<cad.length();i++)
@@ -266,5 +314,10 @@ public class MainActivity extends AppCompatActivity {
         if(!por)
             cad = cad.substring(0, cad.indexOf("."));
         display.setText(cad);
+    }
+
+    public static String convertir_cientifica(double n)
+    {
+        return new DecimalFormat("#.###############").format(n);
     }
 }
